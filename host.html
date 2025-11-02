@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ihsan Quiz - Host Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .screen {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn.host {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        .input-group input {
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
+        }
+
+        .room-code {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .player-url {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+
+        .players-list {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .player {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .leaderboard {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .leaderboard-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rank {
+            font-weight: bold;
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .host-controls {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .question-display {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .timer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin: 20px 0;
+        }
+
+        .story-content {
+            text-align: left;
+            max-height: 60vh;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+
+        .story-content h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .story-content p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ihsan Quiz - Host Dashboard</h1>
+            <p>Control the quiz experience</p>
+        </div>
+
+        <!-- Host Setup -->
+        <div class="screen" id="hostSetup">
+            <h2>Create Quiz Session</h2>
+            <div class="input-group">
+                <input type="text" id="hostName" placeholder="Your Name" maxlength="20">
+            </div>
+            <button class="btn host" onclick="createRoom()">Create Room</button>
+        </div>
+
+        <!-- Waiting Room -->
+        <div class="screen hidden" id="waitingRoom">
+            <h2>Quiz Room</h2>
+            <div class="room-code" id="displayRoomCode"></div>
+            <div class="player-url">
+                <strong>Share this link with players:</strong><br>
+                <span id="playerUrl"></span>
+            </div>
+            <div class="players-list">
+                <h3>Players Joined:</h3>
+                <div id="playersList"></div>
+            </div>
+            <div class="host-controls">
+                <button class="btn" onclick="showStory()">Show Story to Players</button>
+                <button class="btn host" onclick="startQuiz()">Start Quiz</button>
+            </div>
+        </div>
+
+        <!-- Story Control -->
+        <div class="screen hidden" id="storyControl">
+            <h2>Story is being displayed to players</h2>
+            <div class="story-content">
+                <h3>Doing Everything with Ihsan</h3>
+                <p><em>Players are reading this story now...</em></p>
+            </div>
+            <div class="host-controls">
+                <button class="btn host" onclick="startQuiz()">Start Quiz Now</button>
+            </div>
+        </div>
+
+        <!-- Quiz Control -->
+        <div class="screen hidden" id="quizControl">
+            <div class="timer" id="timer">30</div>
+            <div class="question-display">
+                <h3 id="questionCounter">Question 1 of 10</h3>
+                <div id="currentQuestion"></div>
+                <div id="currentOptions"></div>
+            </div>
+            <div class="players-list">
+                <h3>Live Scores:</h3>
+                <div id="liveScores"></div>
+            </div>
+            <div class="host-controls">
+                <button class="btn host" id="nextBtn" onclick="nextQuestion()">Next Question</button>
+                <button class="btn" onclick="endQuiz()">End Quiz</button>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="screen hidden" id="results">
+            <h2>Final Results</h2>
+            <div class="leaderboard" id="leaderboard"></div>
+            <div class="host-controls">
+                <button class="btn host" onclick="resetGame()">New Game</button>
+                <button class="btn" onclick="location.reload()">Create New Room</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCFzGCN5Vnabxos0nv4OhwLlKkvMixsNXU",
+            authDomain: "imtihaan-91c4c.firebaseapp.com",
+            databaseURL: "https://imtihaan-91c4c-default-rtdb.firebaseio.com",
+            projectId: "imtihaan-91c4c",
+            storageBucket: "imtihaan-91c4c.firebasestorage.app",
+            messagingSenderId: "171603884864",
+            appId: "1:171603884864:web:257ba169597072368818a5"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let currentRoom = null;
+        let hostName = '';
+        let currentQuestion = 0;
+        let timeLeft = 30;
+        let timerInterval = null;
+
+        const questions = [
+            {
+                question: "What does 'ihsan' mean according to the story?",
+                options: ["Being fast", "Excellence and kindness", "Being loud", "Being first"],
+                correct: 1
+            },
+            {
+                question: "What Islamic celebration was the Kareem family preparing for?",
+                options: ["Eid al-Fitr", "Eid al-Adha", "Ramadan", "Hajj"],
+                correct: 1
+            },
+            {
+                question: "What happened when Amirah decorated quickly without ihsan?",
+                options: ["Everything was perfect", "The ribbons fell off", "She got praised", "Nothing happened"],
+                correct: 1
+            },
+            {
+                question: "What did Baba find when he looked closely at Amir's car washing?",
+                options: ["It was perfect", "Soap under tires and dirt under bumper", "The car was dirty", "Nothing wrong"],
+                correct: 1
+            },
+            {
+                question: "According to Baba, what does ihsan bring even if work looks good?",
+                options: ["Speed", "Barakah (blessings)", "Money", "Fame"],
+                correct: 1
+            },
+            {
+                question: "Who helped prepare food for the neighbors?",
+                options: ["Only Mama", "Mama, Amirah, and Hasanah", "Only Amirah", "The whole family"],
+                correct: 1
+            },
+            {
+                question: "How did Hasan initially feed the birds?",
+                options: ["Spread seeds evenly", "Poured seeds in one big pile", "Didn't feed them", "Used a feeder"],
+                correct: 1
+            },
+            {
+                question: "What Prophet's teaching did Amir mention about showing mercy to animals?",
+                options: ["Feed them daily", "If you slaughter, slaughter well", "Don't harm them", "Keep them as pets"],
+                correct: 1
+            },
+            {
+                question: "According to the story, ihsan should be applied to:",
+                options: ["Only big acts", "Only worship", "Everything we do", "Only helping others"],
+                correct: 2
+            },
+            {
+                question: "What did the family say together at the end?",
+                options: ["Subhan'Allah", "Alhamdulillah", "Allahu Akbar", "La ilaha illa Allah"],
+                correct: 1
+            }
+        ];
+
+        function hideAllScreens() {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+        }
+
+        window.createRoom = async () => {
+            const hostNameInput = document.getElementById('hostName').value.trim();
+            if (!hostNameInput) {
+                alert('Please enter your name');
+                return;
+            }
+
+            hostName = hostNameInput;
+            const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            currentRoom = roomCode;
+
+            const roomData = {
+                hostName: hostName,
+                players: {},
+                gameState: 'waiting',
+                currentQuestion: 0,
+                createdAt: Date.now()
+            };
+
+            try {
+                await database.ref(`rooms/${roomCode}`).set(roomData);
+                showWaitingRoom();
+                listenToRoom();
+            } catch (error) {
+                alert('Error creating room. Please try again.');
+            }
+        };
+
+        function showWaitingRoom() {
+            hideAllScreens();
+            document.getElementById('waitingRoom').classList.remove('hidden');
+            document.getElementById('displayRoomCode').textContent = currentRoom;
+            
+            const currentUrl = window.location.href;
+            const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+            const playerUrl = `${baseUrl}/player.html?room=${currentRoom}`;
+            document.getElementById('playerUrl').textContent = playerUrl;
+        }
+
+        function listenToRoom() {
+            const roomRef = database.ref(`rooms/${currentRoom}`);
+            roomRef.on('value', (snapshot) => {
+                if (!snapshot.exists()) return;
+
+                const roomData = snapshot.val();
+                updatePlayersList(roomData.players || {});
+                
+                if (roomData.gameState === 'story') {
+                    showStoryControl();
+                } else if (roomData.gameState === 'quiz') {
+                    showQuizControl(roomData);
+                } else if (roomData.gameState === 'results') {
+                    showResults(roomData.players || {});
+                }
+            });
+        }
+
+        function updatePlayersList(players) {
+            const playersList = document.getElementById('playersList');
+            const liveScores = document.getElementById('liveScores');
+            
+            if (playersList) {
+                playersList.innerHTML = '';
+                Object.entries(players).forEach(([id, player]) => {
+                    const playerDiv = document.createElement('div');
+                    playerDiv.className = 'player';
+                    playerDiv.innerHTML = `<span>${player.name}</span><span>Score: ${player.score || 0}</span>`;
+                    playersList.appendChild(playerDiv);
+                });
+            }
+            
+            if (liveScores) {
+                liveScores.innerHTML = '';
+                const sortedPlayers = Object.entries(players).sort(([,a], [,b]) => (b.score || 0) - (a.score || 0));
+                sortedPlayers.forEach(([id, player], index) => {
+                    const playerDiv = document.createElement('div');
+                    playerDiv.className = 'player';
+                    playerDiv.innerHTML = `<span>#${index + 1} ${player.name}</span><span>${player.score || 0} pts</span>`;
+                    liveScores.appendChild(playerDiv);
+                });
+            }
+        }
+
+        window.showStory = async () => {
+            await database.ref(`rooms/${currentRoom}/gameState`).set('story');
+        };
+
+        function showStoryControl() {
+            hideAllScreens();
+            document.getElementById('storyControl').classList.remove('hidden');
+        }
+
+        window.startQuiz = async () => {
+            currentQuestion = 0;
+            await database.ref(`rooms/${currentRoom}/gameState`).set('quiz');
+            await database.ref(`rooms/${currentRoom}/currentQuestion`).set(0);
+            await database.ref(`rooms/${currentRoom}/questionStartTime`).set(Date.now());
+        };
+
+        function showQuizControl(roomData) {
+            hideAllScreens();
+            document.getElementById('quizControl').classList.remove('hidden');
+            
+            currentQuestion = roomData.currentQuestion || 0;
+            loadQuestion(roomData.questionStartTime);
+        }
+
+        function loadQuestion(startTime) {
+            if (currentQuestion >= questions.length) {
+                endQuiz();
+                return;
+            }
+            
+            const q = questions[currentQuestion];
+            document.getElementById('questionCounter').textContent = `Question ${currentQuestion + 1} of 10`;
+            document.getElementById('currentQuestion').textContent = q.question;
+            
+            const optionsHtml = q.options.map((option, index) => 
+                `<div style="margin: 5px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                    ${String.fromCharCode(65 + index)}) ${option}
+                </div>`
+            ).join('');
+            document.getElementById('currentOptions').innerHTML = optionsHtml;
+            
+            startTimer(startTime);
+        }
+
+        function startTimer(startTime) {
+            clearInterval(timerInterval);
+            
+            const updateTimer = () => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timeLeft = Math.max(0, 30 - elapsed);
+                document.getElementById('timer').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timer').textContent = "Time's Up!";
+                }
+            };
+            
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        window.nextQuestion = async () => {
+            currentQuestion++;
+            
+            if (currentQuestion >= questions.length) {
+                endQuiz();
+            } else {
+                await database.ref(`rooms/${currentRoom}/currentQuestion`).set(currentQuestion);
+                await database.ref(`rooms/${currentRoom}/questionStartTime`).set(Date.now());
+            }
+        };
+
+        window.endQuiz = async () => {
+            await database.ref(`rooms/${currentRoom}/gameState`).set('results');
+        };
+
+        function showResults(players) {
+            hideAllScreens();
+            document.getElementById('results').classList.remove('hidden');
+            
+            const leaderboard = document.getElementById('leaderboard');
+            leaderboard.innerHTML = '';
+            
+            const sortedPlayers = Object.entries(players).sort(([,a], [,b]) => (b.score || 0) - (a.score || 0));
+            
+            sortedPlayers.forEach(([id, player], index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                item.innerHTML = `
+                    <div><span class="rank">#${index + 1}</span><span>${player.name}</span></div>
+                    <span>${player.score || 0} points</span>
+                `;
+                leaderboard.appendChild(item);
+            });
+        }
+
+        window.resetGame = async () => {
+            const playersRef = database.ref(`rooms/${currentRoom}/players`);
+            const snapshot = await playersRef.once('value');
+            
+            const players = snapshot.val() || {};
+            for (const playerId in players) {
+                await database.ref(`rooms/${currentRoom}/players/${playerId}/score`).set(0);
+            }
+            
+            await database.ref(`rooms/${currentRoom}/gameState`).set('waiting');
+            await database.ref(`rooms/${currentRoom}/currentQuestion`).set(0);
+            
+            currentQuestion = 0;
+            showWaitingRoom();
+        };
+    </script>
+</body>
+</html>

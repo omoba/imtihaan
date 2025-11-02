@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ihsan Quiz - Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .screen {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        .input-group input {
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
+        }
+
+        .waiting-message {
+            font-size: 1.2rem;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .question {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #2c3e50;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .option:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .option.correct {
+            background: #27ae60;
+            color: white;
+        }
+
+        .option.incorrect {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .timer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin: 20px 0;
+        }
+
+        .score {
+            font-size: 1.5rem;
+            color: #27ae60;
+            margin: 20px 0;
+        }
+
+        .story-content {
+            text-align: left;
+            max-height: 60vh;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+
+        .story-content h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .story-content p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .leaderboard {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .leaderboard-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rank {
+            font-weight: bold;
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ihsan Quiz</h1>
+            <p>Test your knowledge about excellence and kindness</p>
+        </div>
+
+        <!-- Join Screen -->
+        <div class="screen" id="joinScreen">
+            <h2>Join Quiz</h2>
+            <div class="input-group">
+                <input type="text" id="playerName" placeholder="Enter Your Name" maxlength="20">
+            </div>
+            <button class="btn" onclick="joinRoom()">Join Quiz</button>
+        </div>
+
+        <!-- Waiting Screen -->
+        <div class="screen hidden" id="waitingScreen">
+            <h2>Waiting for Quiz to Start</h2>
+            <div class="waiting-message">
+                <p>You've joined the quiz successfully!</p>
+                <p>Wait for the host to begin...</p>
+            </div>
+            <div class="score">Your Score: <span id="currentScore">0</span></div>
+        </div>
+
+        <!-- Story Screen -->
+        <div class="screen hidden" id="storyScreen">
+            <div class="story-content">
+                <h2>Doing Everything with Ihsan</h2>
+                <p>The morning sun shone softly through the curtains of the Kareem family's home. It was a special weekend—Eid al-Adha was only a few days away, and everyone was busy preparing for it. Baba gathered the family in the living room after breakfast.</p>
+                
+                <p>"Today," he said warmly, "we'll spend the day preparing for Eid. But remember, whatever we do, we must do it with ihsan—with excellence and kindness—because the Prophet ﷺ said, 'Verily Allah has prescribed ihsan in all things.'"</p>
+                
+                <p>Amir grinned. "That means we do our best, right, Baba?"<br>"Exactly," Baba replied.</p>
+                
+                <p>Amirah offered to decorate the living room with balloons and ribbons. She worked quickly, wanting to finish before everyone else. But in her hurry, she taped the ribbons unevenly and left some balloons half-inflated.</p>
+                
+                <p>When Mama came to see, a few ribbons had already fallen off the wall.<br>"Oh, Amirah," Mama said gently, "you worked fast, but not with ihsan. See how it turned out?"</p>
+                
+                <p>Amirah sighed, realizing her mistake.<br>Mama smiled. "Doing things with ihsan means taking care and doing it properly, not just quickly."<br>Amirah nodded and redid the decorations carefully. This time, everything looked beautiful.</p>
+                
+                <p>Meanwhile, Amir washed Baba's car. He finished in record time, and the car looked shiny. When Baba came outside, Amir proudly said, "See, Baba? I didn't take long, and it still looks perfect. Maybe ihsan isn't always needed."</p>
+                
+                <p>Baba smiled patiently. "My son, it looks clean, but come closer."<br>They both looked carefully—there was still soap under the tires and dirt under the bumper.<br>Baba said, "Sometimes things seem good, but when done without ihsan, they may lack barakah. Even if it turned out perfect, Allah rewards more when we do things beautifully for His sake."<br>Amir nodded slowly. "So ihsan brings blessings, even beyond what we see."</p>
+                
+                <p>Later that afternoon, Mama, Amirah, and Hasanah prepared food for their neighbors. They planned everything before starting—cleaning the vegetables, seasoning the meat, and dividing tasks neatly.<br>"Let's make sure we do this with ihsan," Mama reminded.</p>
+                
+                <p>They cooked carefully, kept the kitchen tidy, and even wrapped the food nicely. When they delivered it, everyone praised their kindness.<br>"Alhamdulillah," Mama said, "When we work with ihsan, Allah blesses our efforts and the hearts of those who receive them."</p>
+                
+                <p>Later in the evening, Hasan came to help Amir feed the birds. Hasan poured the seeds quickly into one big pile. Amir frowned.<br>"Hasan, you should spread it so all the birds can eat."<br>"They'll find it anyway," Hasan shrugged. "Why bother with ihsan?"</p>
+                
+                <p>Amir smiled and explained, "Because even birds deserve kindness. The Prophet ﷺ said if you slaughter, slaughter well, and if you kill, kill well—meaning we must show mercy even to animals."<br>Hasan's eyes widened. "So doing things carefully and kindly pleases Allah, even for small things?"<br>"Exactly," Amir replied. "That's ihsan." Hasan nodded and began spreading the seeds evenly.</p>
+                
+                <p>That night, the Kareem family gathered together. Baba looked at everyone and said,<br>"Today, we learned that ihsan isn't only for big acts—it's for everything we do. Whether decorating, cleaning, cooking, or feeding animals, Allah loves those who do things with excellence."</p>
+                
+                <p>Mama added softly, "When we act with ihsan, we bring beauty and mercy into our hearts and homes."</p>
+                
+                <p>Amirah smiled proudly. "From now on, I'll always do my best—with ihsan!"<br>Amir raised his hand and said, "Me too, InshaAllah!"</p>
+                
+                <p>Baba smiled. "That's my children. Remember—ihsan makes the ordinary special and turns simple work into worship."</p>
+                
+                <p>They all said together, "Alhamdulillah!"</p>
+            </div>
+            <div class="waiting-message">
+                <p>Wait for the host to start the quiz...</p>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div class="screen hidden" id="quizScreen">
+            <div class="timer" id="timer">30</div>
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+            <div class="score">Score: <span id="playerScore">0</span></div>
+            <div class="waiting-message" id="waitingForNext" style="display: none;">
+                <p>Waiting for host to continue...</p>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="screen hidden" id="resultsScreen">
+            <h2>Quiz Complete!</h2>
+            <div class="score">Your Final Score: <span id="finalScore">0</span></div>
+            <div class="leaderboard" id="leaderboard"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCFzGCN5Vnabxos0nv4OhwLlKkvMixsNXU",
+            authDomain: "imtihaan-91c4c.firebaseapp.com",
+            databaseURL: "https://imtihaan-91c4c-default-rtdb.firebaseio.com",
+            projectId: "imtihaan-91c4c",
+            storageBucket: "imtihaan-91c4c.firebasestorage.app",
+            messagingSenderId: "171603884864",
+            appId: "1:171603884864:web:257ba169597072368818a5"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let currentRoom = null;
+        let playerId = null;
+        let playerName = '';
+        let playerScore = 0;
+        let currentQuestion = 0;
+        let timeLeft = 30;
+        let timerInterval = null;
+        let selectedAnswer = null;
+
+        const questions = [
+            {
+                question: "What does 'ihsan' mean according to the story?",
+                options: ["Being fast", "Excellence and kindness", "Being loud", "Being first"],
+                correct: 1
+            },
+            {
+                question: "What Islamic celebration was the Kareem family preparing for?",
+                options: ["Eid al-Fitr", "Eid al-Adha", "Ramadan", "Hajj"],
+                correct: 1
+            },
+            {
+                question: "What happened when Amirah decorated quickly without ihsan?",
+                options: ["Everything was perfect", "The ribbons fell off", "She got praised", "Nothing happened"],
+                correct: 1
+            },
+            {
+                question: "What did Baba find when he looked closely at Amir's car washing?",
+                options: ["It was perfect", "Soap under tires and dirt under bumper", "The car was dirty", "Nothing wrong"],
+                correct: 1
+            },
+            {
+                question: "According to Baba, what does ihsan bring even if work looks good?",
+                options: ["Speed", "Barakah (blessings)", "Money", "Fame"],
+                correct: 1
+            },
+            {
+                question: "Who helped prepare food for the neighbors?",
+                options: ["Only Mama", "Mama, Amirah, and Hasanah", "Only Amirah", "The whole family"],
+                correct: 1
+            },
+            {
+                question: "How did Hasan initially feed the birds?",
+                options: ["Spread seeds evenly", "Poured seeds in one big pile", "Didn't feed them", "Used a feeder"],
+                correct: 1
+            },
+            {
+                question: "What Prophet's teaching did Amir mention about showing mercy to animals?",
+                options: ["Feed them daily", "If you slaughter, slaughter well", "Don't harm them", "Keep them as pets"],
+                correct: 1
+            },
+            {
+                question: "According to the story, ihsan should be applied to:",
+                options: ["Only big acts", "Only worship", "Everything we do", "Only helping others"],
+                correct: 2
+            },
+            {
+                question: "What did the family say together at the end?",
+                options: ["Subhan'Allah", "Alhamdulillah", "Allahu Akbar", "La ilaha illa Allah"],
+                correct: 1
+            }
+        ];
+
+        // Get room code from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomFromUrl = urlParams.get('room');
+
+        function hideAllScreens() {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+        }
+
+        window.joinRoom = async () => {
+            const playerNameInput = document.getElementById('playerName').value.trim();
+            
+            if (!playerNameInput) {
+                alert('Please enter your name');
+                return;
+            }
+
+            if (!roomFromUrl) {
+                alert('Invalid room link');
+                return;
+            }
+
+            playerName = playerNameInput;
+            playerId = 'player_' + Date.now();
+            currentRoom = roomFromUrl;
+
+            try {
+                const roomRef = database.ref(`rooms/${roomFromUrl}`);
+                const snapshot = await roomRef.once('value');
+
+                if (!snapshot.exists()) {
+                    alert('Quiz room not found');
+                    return;
+                }
+
+                await database.ref(`rooms/${roomFromUrl}/players/${playerId}`).set({
+                    name: playerName,
+                    score: 0
+                });
+
+                showWaitingScreen();
+                listenToRoom();
+            } catch (error) {
+                alert('Error joining quiz. Please try again.');
+            }
+        };
+
+        function showWaitingScreen() {
+            hideAllScreens();
+            document.getElementById('waitingScreen').classList.remove('hidden');
+        }
+
+        function listenToRoom() {
+            const roomRef = database.ref(`rooms/${currentRoom}`);
+            roomRef.on('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    alert('Quiz has ended');
+                    return;
+                }
+
+                const roomData = snapshot.val();
+                
+                if (roomData.gameState === 'story') {
+                    showStoryScreen();
+                } else if (roomData.gameState === 'quiz') {
+                    showQuizScreen(roomData);
+                } else if (roomData.gameState === 'results') {
+                    showResultsScreen(roomData.players || {});
+                }
+            });
+        }
+
+        function showStoryScreen() {
+            hideAllScreens();
+            document.getElementById('storyScreen').classList.remove('hidden');
+        }
+
+        function showQuizScreen(roomData) {
+            hideAllScreens();
+            document.getElementById('quizScreen').classList.remove('hidden');
+            
+            currentQuestion = roomData.currentQuestion || 0;
+            loadQuestion(roomData.questionStartTime);
+        }
+
+        function loadQuestion(startTime) {
+            if (currentQuestion >= questions.length) return;
+            
+            const q = questions[currentQuestion];
+            document.getElementById('question').textContent = q.question;
+            document.getElementById('playerScore').textContent = playerScore;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectAnswer(index, optionDiv);
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            selectedAnswer = null;
+            document.getElementById('waitingForNext').style.display = 'none';
+            startTimer(startTime);
+        }
+
+        function startTimer(startTime) {
+            clearInterval(timerInterval);
+            
+            const updateTimer = () => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timeLeft = Math.max(0, 30 - elapsed);
+                document.getElementById('timer').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timer').textContent = "Time's Up!";
+                }
+            };
+            
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        window.selectAnswer = async (index, element) => {
+            if (selectedAnswer !== null) return;
+            
+            selectedAnswer = index;
+            element.classList.add('selected');
+            
+            const q = questions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+            
+            // Show correct answer
+            options[q.correct].classList.add('correct');
+            if (index !== q.correct) {
+                element.classList.add('incorrect');
+            }
+            
+            // Calculate score
+            let points = 0;
+            if (index === q.correct) {
+                points = timeLeft > 0 ? timeLeft * 10 : 5;
+                playerScore += points;
+            }
+            
+            document.getElementById('playerScore').textContent = playerScore;
+            document.getElementById('currentScore').textContent = playerScore;
+            
+            // Update player score in database
+            await database.ref(`rooms/${currentRoom}/players/${playerId}/score`).set(playerScore);
+            
+            // Disable all options
+            options.forEach(opt => opt.onclick = null);
+            clearInterval(timerInterval);
+            
+            // Show waiting message
+            document.getElementById('waitingForNext').style.display = 'block';
+        };
+
+        function showResultsScreen(players) {
+            hideAllScreens();
+            document.getElementById('resultsScreen').classList.remove('hidden');
+            
+            document.getElementById('finalScore').textContent = playerScore;
+            
+            const leaderboard = document.getElementById('leaderboard');
+            leaderboard.innerHTML = '';
+            
+            const sortedPlayers = Object.entries(players).sort(([,a], [,b]) => (b.score || 0) - (a.score || 0));
+            
+            sortedPlayers.forEach(([id, player], index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                if (id === playerId) {
+                    item.style.background = '#e8f5e8';
+                    item.style.fontWeight = 'bold';
+                }
+                item.innerHTML = `
+                    <div><span class="rank">#${index + 1}</span><span>${player.name}</span></div>
+                    <span>${player.score || 0} points</span>
+                `;
+                leaderboard.appendChild(item);
+            });
+        }
+
+        // Auto-join if room code is in URL
+        if (roomFromUrl) {
+            document.getElementById('joinScreen').querySelector('h2').textContent = `Join Quiz Room: ${roomFromUrl}`;
+        } else {
+            document.getElementById('joinScreen').innerHTML = '<h2>Invalid Quiz Link</h2><p>Please use the correct link provided by your host.</p>';
+        }
+    </script>
+</body>
+</html>
