@@ -182,6 +182,18 @@
         .option.incorrect {
             background: #e74c3c;
             color: white;
+            border-color: #e74c3c;
+        }
+        
+        .option:disabled,
+        .option[style*="pointer-events: none"] {
+            cursor: default !important;
+        }
+        
+        .option[style*="pointer-events: none"]:hover {
+            background: inherit;
+            border-color: inherit;
+            transform: none;
         }
 
         .timer {
@@ -599,17 +611,17 @@
             options.forEach(opt => {
                 opt.onclick = null;
                 opt.style.cursor = 'default';
+                opt.style.pointerEvents = 'none';
             });
             
-            // Show correct answer
+            // Always show the correct answer in green
             options[q.correct].classList.add('correct');
+            options[q.correct].style.borderColor = '#27ae60';
             
-            // Show selected answer (only add incorrect if wrong)
-            if (index === q.correct) {
-                element.classList.add('correct');
-            } else {
-                element.classList.add('selected');
+            // If wrong answer was selected, show it in red
+            if (index !== q.correct) {
                 element.classList.add('incorrect');
+                element.style.borderColor = '#e74c3c';
             }
             
             // Calculate score
