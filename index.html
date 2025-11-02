@@ -126,7 +126,7 @@
         }
 
         .quiz-area {
-            display: none;
+            /* Quiz area will be shown/hidden by JavaScript */
         }
 
         .question {
@@ -326,10 +326,10 @@
         </div>
     </div>
 
-    <script type="module">
-        // Firebase configuration (replace with your config)
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue, push, remove, off } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+        // Firebase configuration
 
         const firebaseConfig = {
             // REPLACE THIS WITH YOUR FIREBASE CONFIG FROM STEP 3
@@ -342,8 +342,8 @@
             appId: "1:171603884864:web:257ba169597072368818a5"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
         // Game state
         let currentRoom = null;
@@ -462,7 +462,7 @@
             };
 
             try {
-                await set(ref(database, `rooms/${roomCode}`), roomData);
+                await database.ref(`rooms/${roomCode}`).set(roomData);
                 showWaitingRoom();
                 listenToRoom();
             } catch (error) {
@@ -484,17 +484,15 @@
             currentRoom = roomCodeInput;
 
             try {
-                const roomRef = ref(database, `rooms/${roomCodeInput}`);
-                const snapshot = await new Promise((resolve) => {
-                    onValue(roomRef, resolve, { onlyOnce: true });
-                });
+                const roomRef = database.ref(`rooms/${roomCodeInput}`);
+                const snapshot = await roomRef.once('value');
 
                 if (!snapshot.exists()) {
                     alert('Room not found');
                     return;
                 }
 
-                await set(ref(database, `rooms/${roomCodeInput}/players/${playerId}`), {
+                await database.ref(`rooms/${roomCodeInput}/players/${playerId}`).set({
                     name: playerName,
                     score: 0,
                     isHost: false
@@ -518,8 +516,8 @@
         }
 
         function listenToRoom() {
-            const roomRef = ref(database, `rooms/${currentRoom}`);
-            onValue(roomRef, (snapshot) => {
+            const roomRef = database.ref(`rooms/${currentRoom}`);
+            roomRef.on('value', (snapshot) => {
                 if (!snapshot.exists()) {
                     alert('Room has been closed');
                     showMainMenu();
@@ -558,7 +556,7 @@
         window.showStory = async () => {
             if (!isHost) return;
             
-            await set(ref(database, `rooms/${currentRoom}/gameState`), 'story');
+            await database.ref(`rooms/${currentRoom}/gameState`).set('story');
         };
 
         function showStoryScreen() {
@@ -573,37 +571,59 @@
         window.startQuiz = async () => {
             if (!isHost) return;
             
-            await set(ref(database, `rooms/${currentRoom}/gameState`), 'quiz');
-            await set(ref(database, `rooms/${currentRoom}/currentQuestion`), 0);
-            await set(ref(database, `rooms/${currentRoom}/questionStartTime`), Date.now());
+            try {
+                console.log('Starting quiz...');
+                await database.ref(`rooms/${currentRoom}/gameState`).set('quiz');
+                await database.ref(`rooms/${currentRoom}/currentQuestion`).set(0);
+                await database.ref(`rooms/${currentRoom}/questionStartTime`).set(Date.now());
+                console.log('Quiz started successfully');
+            } catch (error) {
+                console.error('Error starting quiz:', error);
+                alert('Error starting quiz: ' + error.message);
+            }
         };
 
         function showQuizScreen(roomData) {
+            console.log('showQuizScreen called', roomData);
             hideAllScreens();
-            document.getElementById('quizScreen').classList.remove('hidden');
+            const quizScreen = document.getElementById('quizScreen');
+            if (quizScreen) {
+                quizScreen.classList.remove('hidden');
+                console.log('Quiz screen shown');
+            } else {
+                console.error('Quiz screen element not found');
+            }
             
             currentQuestion = roomData.currentQuestion || 0;
             loadQuestion(roomData.questionStartTime);
         }
 
         function loadQuestion(startTime) {
+            console.log('loadQuestion called', currentQuestion, startTime);
             if (currentQuestion >= questions.length) return;
             
             const q = questions[currentQuestion];
-            document.getElementById('questionCounter').textContent = `Question ${currentQuestion + 1} of 10`;
-            document.getElementById('question').textContent = q.question;
-            document.getElementById('playerScore').textContent = `Score: ${playerScore}`;
+            console.log('Loading question:', q);
             
-            const optionsContainer = document.getElementById('options');
-            optionsContainer.innerHTML = '';
+            const questionEl = document.getElementById('question');
+            const counterEl = document.getElementById('questionCounter');
+            const scoreEl = document.getElementById('playerScore');
+            const optionsEl = document.getElementById('options');
             
-            q.options.forEach((option, index) => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'option';
-                optionDiv.textContent = option;
-                optionDiv.onclick = () => selectAnswer(index, optionDiv);
-                optionsContainer.appendChild(optionDiv);
-            });
+            if (questionEl) questionEl.textContent = q.question;
+            if (counterEl) counterEl.textContent = `Question ${currentQuestion + 1} of 10`;
+            if (scoreEl) scoreEl.textContent = `Score: ${playerScore}`;
+            
+            if (optionsEl) {
+                optionsEl.innerHTML = '';
+                q.options.forEach((option, index) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option';
+                    optionDiv.textContent = option;
+                    optionDiv.onclick = () => selectAnswer(index, optionDiv);
+                    optionsEl.appendChild(optionDiv);
+                });
+            }
             
             selectedAnswer = null;
             startTimer(startTime);
@@ -652,7 +672,7 @@
             document.getElementById('playerScore').textContent = `Score: ${playerScore}`;
             
             // Update player score in database
-            await set(ref(database, `rooms/${currentRoom}/players/${playerId}/score`), playerScore);
+            await database.ref(`rooms/${currentRoom}/players/${playerId}/score`).set(playerScore);
             
             // Disable all options
             options.forEach(opt => opt.onclick = null);
@@ -670,10 +690,10 @@
             currentQuestion++;
             
             if (currentQuestion >= questions.length) {
-                await set(ref(database, `rooms/${currentRoom}/gameState`), 'results');
+                await database.ref(`rooms/${currentRoom}/gameState`).set('results');
             } else {
-                await set(ref(database, `rooms/${currentRoom}/currentQuestion`), currentQuestion);
-                await set(ref(database, `rooms/${currentRoom}/questionStartTime`), Date.now());
+                await database.ref(`rooms/${currentRoom}/currentQuestion`).set(currentQuestion);
+                await database.ref(`rooms/${currentRoom}/questionStartTime`).set(Date.now());
             }
         }
 
@@ -709,18 +729,16 @@
             if (!isHost) return;
             
             // Reset all player scores
-            const playersRef = ref(database, `rooms/${currentRoom}/players`);
-            const snapshot = await new Promise((resolve) => {
-                onValue(playersRef, resolve, { onlyOnce: true });
-            });
+            const playersRef = database.ref(`rooms/${currentRoom}/players`);
+            const snapshot = await playersRef.once('value');
             
             const players = snapshot.val();
             for (const playerId in players) {
-                await set(ref(database, `rooms/${currentRoom}/players/${playerId}/score`), 0);
+                await database.ref(`rooms/${currentRoom}/players/${playerId}/score`).set(0);
             }
             
-            await set(ref(database, `rooms/${currentRoom}/gameState`), 'waiting');
-            await set(ref(database, `rooms/${currentRoom}/currentQuestion`), 0);
+            await database.ref(`rooms/${currentRoom}/gameState`).set('waiting');
+            await database.ref(`rooms/${currentRoom}/currentQuestion`).set(0);
             
             playerScore = 0;
             currentQuestion = 0;
@@ -728,10 +746,10 @@
 
         window.leaveRoom = async () => {
             if (currentRoom && playerId) {
-                await remove(ref(database, `rooms/${currentRoom}/players/${playerId}`));
+                await database.ref(`rooms/${currentRoom}/players/${playerId}`).remove();
                 
                 if (isHost) {
-                    await remove(ref(database, `rooms/${currentRoom}`));
+                    await database.ref(`rooms/${currentRoom}`).remove();
                 }
             }
             
