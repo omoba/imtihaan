@@ -588,7 +588,11 @@
                 const optionDiv = document.createElement('div');
                 optionDiv.className = 'option';
                 optionDiv.textContent = option;
-                optionDiv.onclick = () => selectAnswer(index, optionDiv);
+                optionDiv.addEventListener('click', () => {
+                    if (!answerLocked) {
+                        selectAnswer(index, optionDiv);
+                    }
+                });
                 optionsContainer.appendChild(optionDiv);
             });
             
@@ -617,21 +621,16 @@
         }
 
         window.selectAnswer = async (index, element) => {
-            // Immediately prevent any further clicks
-            if (answerLocked) return;
             answerLocked = true;
-            
-            // Remove all click handlers immediately
+            selectedAnswer = index;
+            const q = questions[currentQuestion];
             const options = document.querySelectorAll('.option');
+            
+            // Disable all options visually
             options.forEach(opt => {
-                opt.onclick = null;
-                opt.removeEventListener('click', opt.onclick);
                 opt.style.pointerEvents = 'none';
                 opt.style.cursor = 'default';
             });
-            
-            selectedAnswer = index;
-            const q = questions[currentQuestion];
             
             // Always show the correct answer in green
             options[q.correct].classList.add('correct');
@@ -641,7 +640,7 @@
                 element.classList.add('incorrect');
             }
             
-            // Calculate score only once
+            // Calculate score
             let points = 0;
             if (index === q.correct) {
                 points = timeLeft > 0 ? timeLeft * 10 : 5;
