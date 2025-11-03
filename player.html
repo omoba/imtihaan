@@ -617,19 +617,21 @@
         }
 
         window.selectAnswer = async (index, element) => {
+            // Immediately prevent any further clicks
             if (answerLocked) return;
-            
             answerLocked = true;
-            selectedAnswer = index;
-            const q = questions[currentQuestion];
-            const options = document.querySelectorAll('.option');
             
-            // Disable all options immediately
+            // Remove all click handlers immediately
+            const options = document.querySelectorAll('.option');
             options.forEach(opt => {
                 opt.onclick = null;
+                opt.removeEventListener('click', opt.onclick);
                 opt.style.pointerEvents = 'none';
                 opt.style.cursor = 'default';
             });
+            
+            selectedAnswer = index;
+            const q = questions[currentQuestion];
             
             // Always show the correct answer in green
             options[q.correct].classList.add('correct');
@@ -639,7 +641,7 @@
                 element.classList.add('incorrect');
             }
             
-            // Calculate score
+            // Calculate score only once
             let points = 0;
             if (index === q.correct) {
                 points = timeLeft > 0 ? timeLeft * 10 : 5;
