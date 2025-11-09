@@ -4,7 +4,7 @@
 
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Click "Create a project"
-3. Enter project name: `ihsan-quiz-app`
+3. Enter project name: `ihsan-quiz`
 4. Disable Google Analytics (optional)
 5. Click "Create project"
 
@@ -26,7 +26,7 @@
 
 ## Step 4: Update HTML File
 
-Replace the firebaseConfig in `multiplayer-quiz.html` with your config:
+Replace the firebaseConfig in your HTML files with your config:
 
 ```javascript
 const firebaseConfig = {
