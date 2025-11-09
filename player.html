@@ -175,8 +175,9 @@
         }
 
         .option.correct {
-            background: #27ae60;
-            color: white;
+            background: #27ae60 !important;
+            color: white !important;
+            border-color: #27ae60 !important;
         }
 
         .option.incorrect {
@@ -371,57 +372,12 @@
                 
                 <p>That evening, she told her parents what she had learned. Her father said, "Alḥamdulillāh, my dear. Modesty guards the soul like a shield." Her mother added, "And Allah loves those who are pure and humble."</p>
                 
-                <p>Before bed, Amirah whispered, "Alḥamdulillāh for the gift of modesty," knowing that her shyness was, in truth, her strength.</p> a math competition. The top student will get a special prize!"</p>
-                
-                <p>Amir's eyes widened. "A prize? I want to win, InshaAllah!" he whispered to his friend Hasan.</p>
-                
-                <p>That evening, at home, Amir sat at his desk with his math notebook open. The questions were tricky. "Hmm," he muttered. "If I could just look at Hasan's answers tomorrow, no one would know."</p>
-                
-                <p>Amirah, his twin sister, overheard him. "Amir! That's cheating," she said firmly. "You can't do that."<br>Amir shrugged. "It's just once. It won't hurt anyone."<br>Amirah frowned. "But it will displease Allah."<br>Amir rolled his eyes. "Nothing bad will happen. You'll see."</p>
-                
-                <p>The next day, during the competition, Amir peeked at Hasan's paper and copied a few answers. When Teacher Fatima announced the results, Amir had the highest score. Everyone clapped.</p>
-                
-                <p>"Alhamdulillah!" Amir shouted proudly. He whispered to Amirah, "See? No one got hurt."<br>Amirah sighed. "Just because nothing bad happened doesn't make it right."</p>
-                
-                <p>That evening, Baba overheard them. "Amir," he said gently, "Do you know what the Prophet ﷺ said about cheating?"<br>Amir looked up. Baba recited:</p>
-                
-                <p>"The Messenger of Allah ﷺ passed by a man who was selling food. He put his hand in it and saw that there was something wrong with it. The Prophet ﷺ said, 'He is not one of us who cheats.'" (Sahih Muslim)</p>
-                
-                <p>Baba continued, "Cheating means hiding the truth. Even if no one sees it, Allah does. And when we cheat, we lose His blessings."<br>Amir felt a little uneasy but didn't say anything.</p>
-                
-                <p>Days passed. Amir began to cheat in small ways—copying homework answers, taking shortcuts during chores, and pretending to finish his prayers quickly. Each time, nothing bad seemed to happen.</p>
-                
-                <p>One afternoon, during science class, Amir whispered to Hasan, "Let me copy your experiment notes. We'll finish faster." Hasan hesitated but agreed. They both got good grades again.</p>
-                
-                <p>Amir smirked. "See? Cheating helps sometimes."</p>
-                
-                <p>Amirah shook her head. "Maybe now, but one day, you'll regret it, Amir."</p>
-                             
-                <p>The following week, Teacher Fatima announced a new group project. Amir was excited. "I'll lead our group!" he said. But instead of researching properly, he copied an entire report from a website and added his name to it.</p>
-                
-                <p>On presentation day, the teacher listened quietly. When Amir finished, she said calmly, "Amir, can you explain how this experiment works?"</p>
-                
-                <p>Amir froze. He didn't understand what he had copied. His classmates stared. Hasan whispered, "Oh no…"</p>
-                
-                <p>Teacher Fatima sighed. "Amir, I checked. This report was copied from the internet. You cheated."</p>
-                
-                <p>Amir's face turned red. "I'm sorry," he said softly.</p>
-                
-                <p>After class, Baba was called in. Amir admitted everything, tears rolling down his cheeks. "I thought it didn't hurt anyone," he sobbed. "But now I feel ashamed."</p>
-                
-                <p>Baba hugged him. "My son, Allah gives us many chances to do right. The worst part of cheating isn't getting caught—it's losing Allah's pleasure."</p>
-                
-                <p>Amir nodded, wiping his tears. "I'll never cheat again, InshaAllah. I want Allah to be pleased with me."</p>
-           
-                <p>From that day, Amir worked honestly, even when it was hard. He began to feel peaceful knowing Allah was pleased with his efforts.</p>
-                
-                <p>Whenever he saw someone tempted to cheat, he would remind them, "The Prophet ﷺ said, 'He is not one of us who cheats.'"</p>
-                
-                <p>And he meant it with all his heart.</p>
+                <p>Before bed, Amirah whispered, "Alḥamdulillāh for the gift of modesty," knowing that her shyness was, in truth, her strength.</p> 
             </div>
             <div class="waiting-message">
                 <p>Wait for the host to start the quiz...</p>
             </div>
+            <button class="btn" onclick="markDoneReading()">Done Reading</button>
         </div>
 
         <!-- Quiz Screen -->
@@ -445,16 +401,8 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="config.js"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCFzGCN5Vnabxos0nv4OhwLlKkvMixsNXU",
-            authDomain: "imtihaan-91c4c.firebaseapp.com",
-            databaseURL: "https://imtihaan-91c4c-default-rtdb.firebaseio.com",
-            projectId: "imtihaan-91c4c",
-            storageBucket: "imtihaan-91c4c.firebasestorage.app",
-            messagingSenderId: "171603884864",
-            appId: "1:171603884864:web:257ba169597072368818a5"
-        };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -463,11 +411,12 @@
         let playerId = null;
         let playerName = '';
         let playerScore = 0;
-        let currentQuestion = 0;
+        let currentQuestion = -1;
         let timeLeft = 30;
         let timerInterval = null;
         let selectedAnswer = null;
         let answerLocked = false;
+        let hasAnswered = false;
 
         const questions = [
             {
@@ -533,10 +482,11 @@
         }
 
         window.joinRoom = async () => {
-            const playerNameInput = document.getElementById('playerName').value.trim();
+            const playerNameInput = document.getElementById('playerName').value;
+            const validatedName = validateInput(playerNameInput, 20);
             
-            if (!playerNameInput) {
-                alert('Please enter your name');
+            if (!validatedName) {
+                alert('Please enter a valid name (1-20 characters)');
                 return;
             }
 
@@ -545,7 +495,7 @@
                 return;
             }
 
-            playerName = playerNameInput;
+            playerName = validatedName;
             playerId = 'player_' + Date.now();
             currentRoom = roomFromUrl;
 
@@ -600,12 +550,25 @@
             document.getElementById('storyScreen').classList.remove('hidden');
         }
 
+        window.markDoneReading = async () => {
+            try {
+                await database.ref(`rooms/${currentRoom}/players/${playerId}/doneReading`).set(true);
+                document.querySelector('#storyScreen .btn').textContent = 'Reading Complete ✓';
+                document.querySelector('#storyScreen .btn').disabled = true;
+            } catch (error) {
+                console.error('Error marking done reading:', error);
+            }
+        };
+
         function showQuizScreen(roomData) {
             hideAllScreens();
             document.getElementById('quizScreen').classList.remove('hidden');
             
-            currentQuestion = roomData.currentQuestion || 0;
-            loadQuestion(roomData.questionStartTime);
+            const newQuestion = roomData.currentQuestion || 0;
+            if (newQuestion !== currentQuestion) {
+                currentQuestion = newQuestion;
+                loadQuestion(roomData.questionStartTime);
+            }
         }
 
         function loadQuestion(startTime) {
@@ -623,15 +586,16 @@
                 optionDiv.className = 'option';
                 optionDiv.textContent = option;
                 optionDiv.addEventListener('click', () => {
-                    if (!answerLocked) {
-                        selectAnswer(index, optionDiv);
-                    }
+                    if (hasAnswered) return;
+                    hasAnswered = true;
+                    selectAnswer(index, optionDiv);
                 });
                 optionsContainer.appendChild(optionDiv);
             });
             
             selectedAnswer = null;
             answerLocked = false;
+            hasAnswered = false;
             document.getElementById('waitingForNext').style.display = 'none';
             startTimer(startTime);
         }
@@ -639,8 +603,11 @@
         function startTimer(startTime) {
             clearInterval(timerInterval);
             
+            // Always give players 30 seconds from when they load the question
+            const playerStartTime = Date.now();
+            
             const updateTimer = () => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const elapsed = Math.floor((Date.now() - playerStartTime) / 1000);
                 timeLeft = Math.max(0, 30 - elapsed);
                 document.getElementById('timer').textContent = timeLeft;
                 
@@ -655,16 +622,19 @@
         }
 
         window.selectAnswer = async (index, element) => {
-            answerLocked = true;
-            selectedAnswer = index;
-            const q = questions[currentQuestion];
-            const options = document.querySelectorAll('.option');
+            console.log('selectAnswer called:', index);
             
-            // Disable all options visually
+            // Immediately disable all options
+            const options = document.querySelectorAll('.option');
             options.forEach(opt => {
                 opt.style.pointerEvents = 'none';
                 opt.style.cursor = 'default';
             });
+            
+            console.log('Processing answer...');
+            
+            selectedAnswer = index;
+            const q = questions[currentQuestion];
             
             // Always show the correct answer in green
             options[q.correct].classList.add('correct');
@@ -672,13 +642,19 @@
             // If wrong answer was selected, show it in red
             if (index !== q.correct) {
                 element.classList.add('incorrect');
+            } else {
+                // If correct answer was selected, ensure it shows green
+                element.classList.add('correct');
             }
             
-            // Calculate score
+            // Calculate score only once
             let points = 0;
             if (index === q.correct) {
                 points = timeLeft > 0 ? timeLeft * 10 : 5;
                 playerScore += points;
+                console.log('Correct answer! Points added:', points, 'Total score:', playerScore);
+            } else {
+                console.log('Wrong answer, no points added');
             }
             
             document.getElementById('playerScore').textContent = playerScore;
@@ -717,10 +693,22 @@
                         item.style.background = '#e8f5e8';
                         item.style.fontWeight = 'bold';
                     }
-                    item.innerHTML = `
-                        <div><span class="rank">#${index + 1}</span><span>${player.name}</span></div>
-                        <span>${player.score || 0} points</span>
-                    `;
+                    const rankSpan = document.createElement('span');
+                    rankSpan.className = 'rank';
+                    rankSpan.textContent = `#${index + 1}`;
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = player.name;
+                    
+                    const leftDiv = document.createElement('div');
+                    leftDiv.appendChild(rankSpan);
+                    leftDiv.appendChild(nameSpan);
+                    
+                    const scoreSpan = document.createElement('span');
+                    scoreSpan.textContent = `${player.score || 0} points`;
+                    
+                    item.appendChild(leftDiv);
+                    item.appendChild(scoreSpan);
                     leaderboard.appendChild(item);
                 });
             };
