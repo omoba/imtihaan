@@ -294,16 +294,8 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="config.js"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCFzGCN5Vnabxos0nv4OhwLlKkvMixsNXU",
-            authDomain: "imtihaan-91c4c.firebaseapp.com",
-            databaseURL: "https://imtihaan-91c4c-default-rtdb.firebaseio.com",
-            projectId: "imtihaan-91c4c",
-            storageBucket: "imtihaan-91c4c.firebasestorage.app",
-            messagingSenderId: "171603884864",
-            appId: "1:171603884864:web:257ba169597072368818a5"
-        };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -374,13 +366,14 @@
         }
 
         window.createRoom = async () => {
-            const hostNameInput = document.getElementById('hostName').value.trim();
-            if (!hostNameInput) {
-                alert('Please enter your name');
+            const hostNameInput = document.getElementById('hostName').value;
+            const validatedName = validateInput(hostNameInput, 20);
+            if (!validatedName) {
+                alert('Please enter a valid name (1-20 characters)');
                 return;
             }
 
-            hostName = hostNameInput;
+            hostName = validatedName;
             const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             currentRoom = roomCode;
 
@@ -439,7 +432,16 @@
                 Object.entries(players).forEach(([id, player]) => {
                     const playerDiv = document.createElement('div');
                     playerDiv.className = 'player';
-                    playerDiv.innerHTML = `<span>${player.name}</span><span>Score: ${player.score || 0}</span>`;
+                    
+                    const nameSpan = document.createElement('span');
+                    const doneStatus = player.doneReading ? ' - Done Reading' : '';
+                    nameSpan.textContent = player.name + doneStatus;
+                    
+                    const scoreSpan = document.createElement('span');
+                    scoreSpan.textContent = `Score: ${player.score || 0}`;
+                    
+                    playerDiv.appendChild(nameSpan);
+                    playerDiv.appendChild(scoreSpan);
                     playersList.appendChild(playerDiv);
                 });
             }
@@ -450,7 +452,15 @@
                 sortedPlayers.forEach(([id, player], index) => {
                     const playerDiv = document.createElement('div');
                     playerDiv.className = 'player';
-                    playerDiv.innerHTML = `<span>#${index + 1} ${player.name}</span><span>${player.score || 0} pts</span>`;
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = `#${index + 1} ${player.name}`;
+                    
+                    const scoreSpan = document.createElement('span');
+                    scoreSpan.textContent = `${player.score || 0} pts`;
+                    
+                    playerDiv.appendChild(nameSpan);
+                    playerDiv.appendChild(scoreSpan);
                     liveScores.appendChild(playerDiv);
                 });
             }
