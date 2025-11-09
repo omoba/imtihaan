@@ -258,6 +258,10 @@
                 <h3>Doing Everything with  </h3>
                 <p><em>Players are reading this story now...</em></p>
             </div>
+            <div class="players-list">
+                <h3>Reading Status:</h3>
+                <div id="storyPlayersList"></div>
+            </div>
             <div class="host-controls">
                 <button class="btn host" onclick="startQuiz()">Start Quiz Now</button>
             </div>
@@ -426,6 +430,7 @@
         function updatePlayersList(players) {
             const playersList = document.getElementById('playersList');
             const liveScores = document.getElementById('liveScores');
+            const storyPlayersList = document.getElementById('storyPlayersList');
             
             if (playersList) {
                 playersList.innerHTML = '';
@@ -443,6 +448,25 @@
                     playerDiv.appendChild(nameSpan);
                     playerDiv.appendChild(scoreSpan);
                     playersList.appendChild(playerDiv);
+                });
+            }
+            
+            if (storyPlayersList) {
+                storyPlayersList.innerHTML = '';
+                Object.entries(players).forEach(([id, player]) => {
+                    const playerDiv = document.createElement('div');
+                    playerDiv.className = 'player';
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = player.name;
+                    
+                    const statusSpan = document.createElement('span');
+                    statusSpan.textContent = player.doneReading ? 'Done Reading ✓' : 'Reading...';
+                    statusSpan.style.color = player.doneReading ? '#27ae60' : '#ff6b6b';
+                    
+                    playerDiv.appendChild(nameSpan);
+                    playerDiv.appendChild(statusSpan);
+                    storyPlayersList.appendChild(playerDiv);
                 });
             }
             
